@@ -1,0 +1,304 @@
+// =============================================================================
+// Namma Ride — Prisma schema (mirrors the PostGIS DDL exactly)
+// PostGIS geography/geometry columns are declared as `Unsupported(...)` so the
+// columns exist in the DB (managed by the raw migration SQL) while Prisma
+// exposes every other field as fully typed. All spatial reads/writes go through
+// the typed helpers in packages/db/src/spatial.ts.
+// =============================================================================
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  // Tells Prisma that extensions live in the DB so `previewFeatures` stays off.
+  extensions = [postgis]
+}
+
+// ----------------------------------------------------------------- Enums
+enum UserRole {
+  rider
+  driver
+  admin
+}
+
+enum DutyStatus {
+  offline
+  online
+  busy
+}
+
+enum VehicleType {
+  auto
+  mini
+  sedan
+  suv
+}
+
+enum RideStatus {
+  requested
+  accepted
+  arrived
+  picked_up
+  completed
+  cancelled
+}
+
+enum PaymentMethod {
+  cash
+  upi_direct
+  wallet
+}
+
+enum PaymentStatus {
+  pending
+  completed
+  failed
+}
+
+enum VerificationStatus {
+  pending
+  approved
+  rejected
+}
+
+enum TicketUrgency {
+  normal
+  high
+  sos
+}
+
+enum TicketStatus {
+  open
+  in_progress
+  resolved
+}
+
+enum ScheduledBookingStatus {
+  scheduled
+  dispatched
+  failed
+  cancelled
+}
+
+// ----------------------------------------------------------------- Tables
+model User {
+  id                String   @id @default(uuid()) @db.Uuid
+  phoneNumber       String   @unique @map("phone_number")
+  fullName          String   @map("full_name")
+  preferredLanguage String   @default("kn") @map("preferred_language")
+  role              UserRole
+  fcmToken          String?  @map("fcm_token")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @default(now()) @map("updated_at")
+
+  driverProfile     Driver?
+  ridesAsRider      Ride[]            @relation("RiderRides")
+  scheduledBookings ScheduledBooking[]
+  supportTickets    SupportTicket[]
+  reviewsWritten    Review[]          @relation("ReviewerReviews")
+  reviewsReceived   Review[]          @relation("TargetReviews")
+  auditLogs         SystemAuditLog[]
+
+  @@map("users")
+}
+
+model Driver {
+  id                    String      @id @default(uuid()) @db.Uuid
+  userId                String      @unique @db.Uuid @map("user_id")
+  isActive              Boolean     @default(false) @map("is_active")
+  dutyStatus            DutyStatus  @default(offline) @map("duty_status")
+  rating                Decimal     @default(5.0) @db.Decimal(3, 2)
+  subscriptionExpiresAt DateTime?   @map("subscription_expires_at")
+  isKycVerified         Boolean     @default(false) @map("is_kyc_verified")
+  currentLat            Decimal?    @db.Decimal(9, 6) @map("current_lat")
+  currentLng            Decimal?    @db.Decimal(9, 6) @map("current_lng")
+  // PostGIS GEOGRAPHY(Point, 4326) — populated by spatial.ts helpers.
+  locationGeog          Unsupported("geography(Point, 4326)")? @map("location_geog")
+  lastPingAt            DateTime    @default(now()) @map("last_ping_at")
+
+  user                  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vehicle               Vehicle?
+  kycDoc                DriverKyc?
+  wallet                DriverWallet?
+  ridesAsDriver         Ride[]      @relation("DriverRides")
+
+  @@index([dutyStatus, isKycVerified], map: "idx_drivers_duty")
+  @@map("drivers")
+}
+
+model Vehicle {
+  id               String      @id @default(uuid()) @db.Uuid
+  driverId         String      @unique @db.Uuid @map("driver_id")
+  vehicleType      VehicleType @map("vehicle_type")
+  licensePlate     String      @unique @map("license_plate")
+  modelName        String      @map("model_name")
+  insuranceExpiry  DateTime    @db.Date @map("insurance_expiry")
+  rcFileUrl        String      @map("rc_file_url")
+
+  driver           Driver      @relation(fields: [driverId], references: [id], onDelete: Cascade)
+
+  @@map("vehicles")
+}
+
+model Ride {
+  id                      String         @id @default(uuid()) @db.Uuid
+  riderId                 String         @db.Uuid @map("rider_id")
+  driverId                String?        @db.Uuid @map("driver_id")
+  status                  RideStatus     @default(requested)
+  pickupAddress           String         @map("pickup_address")
+  pickupLandmark          String?        @map("pickup_landmark")
+  pickupLocation          Unsupported("geography(Point, 4326)") @map("pickup_location")
+  dropAddress             String         @map("drop_address")
+  dropLocation            Unsupported("geography(Point, 4326)") @map("drop_location")
+  fareAmount              Decimal        @db.Decimal(10, 2) @map("fare_amount")
+  distanceKm              Decimal        @db.Decimal(6, 2) @map("distance_km")
+  estimatedDurationMins   Int            @map("estimated_duration_mins")
+  otpCode                 String         @map("otp_code")
+  paymentMethod           PaymentMethod  @map("payment_method")
+  paymentStatus           PaymentStatus  @default(pending) @map("payment_status")
+  createdAt               DateTime       @default(now()) @map("created_at")
+  acceptedAt              DateTime?      @map("accepted_at")
+  startedAt               DateTime?      @map("started_at")
+  completedAt             DateTime?      @map("completed_at")
+
+  rider                   User           @relation("RiderRides", fields: [riderId], references: [id], onDelete: Restrict)
+  driver                  Driver?        @relation("DriverRides", fields: [driverId], references: [id], onDelete: Restrict)
+  locations               RideLocation[]
+  supportTickets          SupportTicket[]
+  reviews                 Review[]
+
+  @@index([status], map: "idx_rides_status")
+  @@map("rides")
+}
+
+model RideLocation {
+  id         BigInt   @id @default(autoincrement())
+  rideId     String   @db.Uuid @map("ride_id")
+  coordinate Unsupported("geography(Point, 4326)")
+  recordedAt DateTime @default(now()) @map("recorded_at")
+
+  ride       Ride     @relation(fields: [rideId], references: [id], onDelete: Cascade)
+
+  @@map("ride_locations")
+}
+
+model DriverKyc {
+  id                 String             @id @default(uuid()) @db.Uuid
+  driverId           String             @unique @db.Uuid @map("driver_id")
+  aadharNumber       String             @unique @map("aadhar_number")
+  aadharFrontUrl     String             @map("aadhar_front_url")
+  aadharBackUrl      String             @map("aadhar_back_url")
+  licenseNumber      String             @unique @map("license_number")
+  licenseFrontUrl    String             @map("license_front_url")
+  verificationStatus VerificationStatus @default(pending) @map("verification_status")
+  rejectionReason    String?            @map("rejection_reason")
+  verifiedAt         DateTime?          @map("verified_at")
+
+  driver             Driver             @relation(fields: [driverId], references: [id], onDelete: Cascade)
+
+  @@map("driver_kyc")
+}
+
+model DriverWallet {
+  id          String             @id @default(uuid()) @db.Uuid
+  driverId    String             @unique @db.Uuid @map("driver_id")
+  balance     Decimal            @default(0.00) @db.Decimal(10, 2)
+  createdAt   DateTime           @default(now()) @map("created_at")
+  updatedAt   DateTime           @default(now()) @map("updated_at")
+
+  driver      Driver             @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  transactions WalletTransaction[]
+
+  @@map("driver_wallets")
+}
+
+model WalletTransaction {
+  id              String       @id @default(uuid()) @db.Uuid
+  walletId        String       @db.Uuid @map("wallet_id")
+  amount          Decimal      @db.Decimal(10, 2)
+  transactionType String       @map("transaction_type")
+  description     String?
+  referenceId     String?      @map("reference_id")
+  createdAt       DateTime     @default(now()) @map("created_at")
+
+  wallet          DriverWallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+  @@map("wallet_transactions")
+}
+
+model SurgeZone {
+  id         String   @id @default(uuid()) @db.Uuid
+  cityName   String   @map("city_name")
+  zoneName   String   @map("zone_name")
+  boundary   Unsupported("geometry(Polygon, 4326)")
+  multiplier Decimal  @default(1.00) @db.Decimal(3, 2)
+  isActive   Boolean  @default(true) @map("is_active")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("surge_zones")
+}
+
+model ScheduledBooking {
+  id            String                 @id @default(uuid()) @db.Uuid
+  riderId       String                 @db.Uuid @map("rider_id")
+  pickupAddress String                 @map("pickup_address")
+  pickupLocation Unsupported("geography(Point, 4326)") @map("pickup_location")
+  dropAddress   String                 @map("drop_address")
+  dropLocation  Unsupported("geography(Point, 4326)") @map("drop_location")
+  scheduledTime DateTime               @map("scheduled_time")
+  status        ScheduledBookingStatus @default(scheduled)
+  createdAt     DateTime               @default(now()) @map("created_at")
+
+  rider         User                   @relation(fields: [riderId], references: [id], onDelete: Cascade)
+
+  @@map("scheduled_bookings")
+}
+
+model SupportTicket {
+  id               String        @id @default(uuid()) @db.Uuid
+  userId           String        @db.Uuid @map("user_id")
+  rideId           String?       @db.Uuid @map("ride_id")
+  category         String
+  issueDescription String        @map("issue_description")
+  aiUrgency        TicketUrgency @default(normal) @map("ai_urgency")
+  aiClassification String?       @map("ai_classification")
+  status           TicketStatus  @default(open)
+  createdAt        DateTime      @default(now()) @map("created_at")
+
+  user             User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ride             Ride?         @relation(fields: [rideId], references: [id], onDelete: SetNull)
+
+  @@map("support_tickets")
+}
+
+model Review {
+  id         String   @id @default(uuid()) @db.Uuid
+  rideId     String   @db.Uuid @map("ride_id")
+  reviewerId String   @db.Uuid @map("reviewer_id")
+  targetId   String   @db.Uuid @map("target_id")
+  rating     Int
+  comments   String?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  ride       Ride     @relation(fields: [rideId], references: [id], onDelete: Cascade)
+  reviewer   User     @relation("ReviewerReviews", fields: [reviewerId], references: [id], onDelete: Cascade)
+  target     User     @relation("TargetReviews", fields: [targetId], references: [id], onDelete: Cascade)
+
+  @@map("reviews")
+}
+
+model SystemAuditLog {
+  id         BigInt   @id @default(autoincrement())
+  actorId    String?  @db.Uuid @map("actor_id")
+  actionType String   @map("action_type")
+  details    Json?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  actor      User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@map("system_audit_logs")
+}

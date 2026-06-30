@@ -1,0 +1,43 @@
+{
+  "expo": {
+    "name": "Namma Rider",
+    "slug": "namma-rider",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.nammaride.rider",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Namma Rider needs location access to search for nearby cabs, display drivers on the map, and set pickup points."
+      }
+    },
+    "android": {
+      "package": "com.nammaride.rider",
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION"
+      ],
+      "config": {
+        "googleMaps": {
+          "apiKey": ""
+        }
+      }
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "scheme": "nammarider",
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "ea51b532-92a8-4a2d-ac15-b3db45a4798d"
+      }
+    }
+  }
+}

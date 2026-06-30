@@ -1,0 +1,39 @@
+{
+  "expo": {
+    "name": "Namma Driver",
+    "slug": "namma-driver",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.nammaride.driver",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Namma Driver needs location access to receive nearby ride requests and track routes.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Namma Driver needs location access in the background to match you with riders even when the app is closed."
+      }
+    },
+    "android": {
+      "package": "com.nammaride.driver",
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "FOREGROUND_SERVICE",
+        "FOREGROUND_SERVICE_LOCATION"
+      ],
+      "config": {
+        "googleMaps": {
+          "apiKey": ""
+        }
+      }
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "scheme": "nammadriver"
+  }
+}
