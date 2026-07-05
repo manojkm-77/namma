@@ -22,10 +22,6 @@
         "ACCESS_FINE_LOCATION"
       ]
     },
-    "web": {
-      "bundler": "metro",
-      "output": "single"
-    },
     "plugins": [
       "expo-router"
     ],
