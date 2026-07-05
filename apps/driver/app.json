@@ -34,6 +34,15 @@
     "plugins": [
       "expo-router"
     ],
-    "scheme": "nammadriver"
+    "scheme": "nammadriver",
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "407fb088-34e0-47dd-b54b-af1c3e334a49"
+      }
+    },
+    "owner": "manojkm"
   }
 }

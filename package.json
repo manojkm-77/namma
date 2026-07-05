@@ -19,5 +19,10 @@
   "workspaces": [
     "apps/*",
     "packages/*"
-  ]
+  ],
+  "expo": {
+    "install": {
+      "expo": ">=50.0.0"
+    }
+  }
 }
