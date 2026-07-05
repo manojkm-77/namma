@@ -44,3 +44,5 @@ apps/*/ios/
 # Windows reserved files
 nul
 
+
+.vercel
