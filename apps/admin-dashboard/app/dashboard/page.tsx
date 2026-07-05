@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react';
 import {
   Activity, Users, AlertTriangle, TrendingUp,
-  MapPin, Compass, Car, Clock, DollarSign
+  MapPin, Car, Clock
 } from 'lucide-react';
+import { RideMap } from '@namma/ui/map';
 import { StatsCard } from '@/components/stats-card';
 import { StatsCardSkeleton } from '@/components/skeleton';
 import { EmptyState } from '@/components/empty-state';
@@ -23,6 +24,16 @@ export default function DashboardPage() {
   );
   const driversOnline = SEED_DRIVERS.filter((d) => d.dutyStatus === 'online');
   const lowWalletDrivers = SEED_DRIVERS.filter((d) => d.walletBalance < 1000);
+
+  const markers = driversOnline.slice(0, 20).map((d) => ({
+    id: d.id,
+    kind: 'vehicle' as const,
+    label: d.licensePlate || 'Vehicle',
+    coord: {
+      latitude: d.lat ?? 12.2958,
+      longitude: d.lng ?? 76.6394,
+    },
+  }));
 
   return (
     <div className="space-y-8">
@@ -85,75 +96,16 @@ export default function DashboardPage() {
             </span>
           </div>
 
-          <div className="h-96 w-full rounded-xl bg-slate-50 border border-slate-100 relative overflow-hidden">
-            <div className="absolute inset-0 bg-[radial-gradient(#cbd5e1_0.5px,transparent_0.5px)] [background-size:16px_16px] opacity-50" />
-
-            {loading ? (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="flex flex-col items-center gap-2">
-                  <Compass className="h-8 w-8 text-slate-300 animate-spin-slow" />
-                  <span className="text-xs text-slate-400 font-medium">Loading map overlay...</span>
-                </div>
-              </div>
-            ) : (
-              <>
-                <div className="absolute top-8 left-8 flex flex-col items-center">
-                  <MapPin className="h-7 w-7 text-red-500 drop-shadow" />
-                  <span className="bg-white px-2.5 py-1 rounded-lg shadow text-[10px] font-bold mt-1 border border-slate-100">
-                    Mysore Palace
-                  </span>
-                </div>
-                <div className="absolute bottom-12 right-12 flex flex-col items-center">
-                  <MapPin className="h-7 w-7 text-red-500 drop-shadow" />
-                  <span className="bg-white px-2.5 py-1 rounded-lg shadow text-[10px] font-bold mt-1 border border-slate-100">
-                    Railway Station
-                  </span>
-                </div>
-                <div className="absolute top-1/3 right-1/4 flex flex-col items-center">
-                  <MapPin className="h-7 w-7 text-red-500 drop-shadow" />
-                  <span className="bg-white px-2.5 py-1 rounded-lg shadow text-[10px] font-bold mt-1 border border-slate-100">
-                    Bus Stand
-                  </span>
-                </div>
-
-                {driversOnline.slice(0, 6).map((driver, idx) => {
-                  const positions = [
-                    { top: '35%', left: '40%' },
-                    { top: '55%', left: '55%' },
-                    { top: '25%', left: '65%' },
-                    { top: '60%', left: '30%' },
-                    { top: '45%', left: '70%' },
-                    { top: '30%', left: '45%' },
-                  ];
-                  return (
-                    <div
-                      key={driver.id}
-                      className="absolute flex flex-col items-center"
-                      style={{ top: positions[idx].top, left: positions[idx].left }}
-                    >
-                      <Car className={`h-5 w-5 drop-shadow ${driver.vehicleType === 'auto' ? 'text-amber-500' : 'text-blue-500'}`} />
-                      <span className="bg-white px-1.5 py-0.5 rounded shadow text-[8px] font-bold mt-0.5 border border-slate-100 whitespace-nowrap">
-                        {driver.licensePlate}
-                      </span>
-                    </div>
-                  );
-                })}
-
-                <div className="absolute bottom-4 left-4 text-[10px] text-slate-400 font-medium bg-white/80 px-3 py-1.5 rounded-lg backdrop-blur-sm">
-                  <div className="flex items-center gap-3">
-                    <span className="flex items-center gap-1">
-                      <span className="h-2 w-2 rounded-full bg-amber-500" /> Auto
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <span className="h-2 w-2 rounded-full bg-blue-500" /> Cab
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <MapPin className="h-3 w-3 text-red-500" /> Landmark
-                    </span>
-                  </div>
-                </div>
-              </>
-            )}
+          <div className="h-96 w-full rounded-xl overflow-hidden border border-slate-100">
+            <RideMap
+              markers={markers}
+              camera={{
+                center: { latitude: 12.2958, longitude: 76.6394 },
+                zoom: 12,
+              }}
+              interactive
+              style={{ borderRadius: 12 }}
+            />
           </div>
         </div>
 

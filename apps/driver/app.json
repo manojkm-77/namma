@@ -31,8 +31,20 @@
         }
       }
     },
-    "plugins": [
-      "expo-router"
+"plugins": [
+      "expo-router",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 34,
+            "targetSdkVersion": 34,
+            "minSdkVersion": 23,
+            "buildToolsVersion": "34.0.0",
+            "kotlinVersion": "1.9.0"
+          }
+        }
+      ]
     ],
     "scheme": "nammadriver",
     "extra": {
