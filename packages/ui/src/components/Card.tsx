@@ -1,15 +1,29 @@
 import React from 'react';
-import { View, ViewProps } from 'react-native';
+import { View, StyleSheet, ViewStyle } from 'react-native';
 
-export interface CardProps extends ViewProps {
+export interface CardProps {
+  children?: React.ReactNode;
   className?: string;
+  style?: ViewStyle;
 }
 
-export const Card = ({ className = '', ...props }: CardProps) => {
-  return (
-    <View
-      className={`bg-white border border-gray-100 rounded-2xl p-4 shadow-sm ${className}`}
-      {...props}
-    />
+export const Card = ({ children, className, style }: CardProps) => {
+  return React.createElement(
+    View,
+    {
+      style: [styles.card, style],
+      ...(className ? { className } : {}),
+    },
+    children
   );
 };
+
+const styles = StyleSheet.create({
+  card: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+});

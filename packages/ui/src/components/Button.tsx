@@ -1,11 +1,15 @@
 import React from 'react';
-import { TouchableOpacity, Text, TouchableOpacityProps } from 'react-native';
+import { TouchableOpacity, Text, StyleSheet, ViewStyle } from 'react-native';
 
-export interface ButtonProps extends TouchableOpacityProps {
+export interface ButtonProps {
   label: string;
   variant?: 'primary' | 'secondary';
   textClassName?: string;
   className?: string;
+  onPress?: () => void;
+  disabled?: boolean;
+  activeOpacity?: number;
+  style?: ViewStyle;
 }
 
 export const Button = ({
@@ -13,27 +17,62 @@ export const Button = ({
   variant = 'primary',
   className = '',
   textClassName = '',
-  ...props
+  onPress,
+  disabled,
+  activeOpacity = 0.8,
+  style,
 }: ButtonProps) => {
-  const baseButtonClass = 'py-3.5 px-6 rounded-xl items-center justify-center flex-row';
-  const variantButtonClass =
-    variant === 'primary'
-      ? 'bg-primary active:opacity-90'
-      : 'bg-secondary active:opacity-90';
-
-  const baseTextClass = 'text-base font-semibold tracking-wide';
-  const variantTextClass =
-    variant === 'primary' ? 'text-secondary' : 'text-primary';
-
-  return (
-    <TouchableOpacity
-      className={`${baseButtonClass} ${variantButtonClass} ${className}`}
-      activeOpacity={0.8}
-      {...props}
-    >
-      <Text className={`${baseTextClass} ${variantTextClass} ${textClassName}`}>
-        {label}
-      </Text>
-    </TouchableOpacity>
+  const button = React.createElement(
+    TouchableOpacity,
+    {
+      onPress,
+      disabled,
+      activeOpacity,
+      style: [
+        styles.button,
+        variant === 'primary' ? styles.primaryButton : styles.secondaryButton,
+        style,
+      ],
+    },
+    React.createElement(
+      Text,
+      {
+        style: [
+          styles.label,
+          variant === 'primary' ? styles.primaryText : styles.secondaryText,
+        ],
+      },
+      label
+    )
   );
+
+  return button as any;
 };
+
+const styles = StyleSheet.create({
+  button: {
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+  },
+  primaryButton: {
+    backgroundColor: '#2563EB',
+  },
+  secondaryButton: {
+    backgroundColor: '#374151',
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: '600',
+    letterSpacing: 0.3,
+  },
+  primaryText: {
+    color: '#FFFFFF',
+  },
+  secondaryText: {
+    color: '#FFFFFF',
+  },
+});

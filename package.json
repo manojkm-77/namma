@@ -19,5 +19,14 @@
   "workspaces": [
     "apps/*",
     "packages/*"
-  ]
+  ],
+  "dependencies": {
+    "@expo-google-fonts/inter": "^0.4.2",
+    "@expo-google-fonts/karla": "^0.4.2",
+    "expo-font": "^57.0.0",
+    "mapbox-gl": "^3.25.0"
+  },
+  "expo": {
+    "detachedCommands": "metro"
+  }
 }

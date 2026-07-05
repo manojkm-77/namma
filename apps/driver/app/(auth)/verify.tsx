@@ -106,8 +106,8 @@ export default function DriverVerifyScreen() {
           console.error('[Verify Driver Profile Details Upsert Error]:', driverError);
         }
 
-        // Redirect to Driver Dashboard tabs
-        router.replace('/(tabs)');
+        // Redirect to onboarding flow for KYC + vehicle setup
+        router.replace('/onboarding');
       }
     } catch (err) {
       console.error('[verifyOtp Exception]:', err);

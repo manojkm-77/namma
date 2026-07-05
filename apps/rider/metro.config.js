@@ -7,20 +7,48 @@ const workspaceRoot = path.resolve(projectRoot, '../..');
 
 const config = getDefaultConfig(projectRoot);
 
-// Intercept node:* imports to resolve to an empty module.
-// This prevents Windows from attempting to create paths with colons.
+config.resolver.blockList = [
+  /react-native-css-interop\/\.cache\/.*/,
+  /mapbox-gl\/dist\/.*/,
+];
+
 config.resolver.resolveRequest = (context, moduleName, platform) => {
-  if (moduleName && moduleName.startsWith('node:')) {
-    return {
-      type: 'empty',
-    };
+  if (typeof moduleName === 'string' && (moduleName.startsWith('node:') || /^node:/u.test(moduleName))) {
+    return context.resolveRequest(context, path.resolve(projectRoot, '__metro_mocks__', 'empty.js'), platform);
   }
-  
-  // Redirect core dependencies to root to prevent duplicates in monorepo
-  const rootRedirects = [
-    'react',
-    'react-dom'
-  ];
+
+  if (moduleName.endsWith('.css')) {
+    return { type: 'empty' };
+  }
+
+  if (moduleName === 'mapbox-gl' || moduleName.startsWith('mapbox-gl/')) {
+    return context.resolveRequest(
+      context,
+      path.resolve(projectRoot, '__metro_mocks__', 'mapbox-gl.js'),
+      platform
+    );
+  }
+
+  if (moduleName === 'expo-location' && platform === 'web') {
+    return context.resolveRequest(
+      context,
+      path.resolve(projectRoot, '__metro_mocks__', 'expo-location.js'),
+      platform
+    );
+  }
+
+  if (moduleName === '@rnmapbox/maps' || moduleName.startsWith('@rnmapbox/maps/')) {
+    if (moduleName === '@rnmapbox/maps') {
+      return context.resolveRequest(
+        context,
+        path.resolve(projectRoot, '__metro_mocks__', '@rnmapbox', 'maps.js'),
+        platform
+      );
+    }
+    return { type: 'empty' };
+  }
+
+  const rootRedirects = ['react', 'react-dom'];
   if (rootRedirects.includes(moduleName)) {
     return context.resolveRequest(
       context,
@@ -28,7 +56,7 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
       platform
     );
   }
-  
+
   return context.resolveRequest(context, moduleName, platform);
 };
 

@@ -2,8 +2,29 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Karla:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --primary: hsl(38, 92%, 50%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(222, 47%, 11%);
+  --secondary-foreground: hsl(210, 40%, 98%);
+  --accent: hsl(142, 70%, 29%);
+  --accent-foreground: hsl(0, 0%, 100%);
+  --background: hsl(0, 0%, 98%);
+  --radius: 12px;
+}
+
 body {
-  background-color: #f9fafb;
+  background-color: var(--background);
   color: #111827;
-  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-family: 'Inter', 'Karla', ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
 }

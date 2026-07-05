@@ -1,15 +1,25 @@
 import React from 'react';
-import { Text as RNText, TextProps as RNTextProps } from 'react-native';
+import { Text as RNText, StyleSheet, TextStyle } from 'react-native';
 
-export interface TextProps extends RNTextProps {
+export interface TextProps {
+  children?: React.ReactNode;
   className?: string;
+  style?: TextStyle;
 }
 
-export const Text = ({ className = '', ...props }: TextProps) => {
-  return (
-    <RNText
-      className={`text-secondary ${className}`}
-      {...props}
-    />
+export const Text = ({ children, className, style }: TextProps) => {
+  return React.createElement(
+    RNText,
+    {
+      style: [styles.text, style],
+      ...(className ? { className } : {}),
+    },
+    children
   );
 };
+
+const styles = StyleSheet.create({
+  text: {
+    color: '#374151',
+  },
+});

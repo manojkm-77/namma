@@ -7,15 +7,37 @@ const workspaceRoot = path.resolve(projectRoot, '../..');
 
 const config = getDefaultConfig(projectRoot);
 
-// Intercept node:* imports to resolve to an empty module.
-// This prevents Windows from attempting to create paths with colons.
+// Handle node:* imports — resolve to empty module for Windows/Web compat
+// Mock native-only packages for web platform
+// Handle .css imports (Metro doesn't handle CSS natively)
 config.resolver.resolveRequest = (context, moduleName, platform) => {
-  if (moduleName && moduleName.startsWith('node:')) {
-    return {
-      type: 'empty',
-    };
+  if (typeof moduleName === 'string' && (moduleName.startsWith('node:') || /^node:/u.test(moduleName))) {
+    return context.resolveRequest(context, path.resolve(projectRoot, '__metro_mocks__', 'empty.js'), platform);
   }
-  
+
+  if (moduleName.endsWith('.css')) {
+    return { type: 'empty' };
+  }
+
+  if (moduleName === 'mapbox-gl' || moduleName.startsWith('mapbox-gl/')) {
+    return context.resolveRequest(
+      context,
+      path.resolve(projectRoot, '__metro_mocks__', 'mapbox-gl.js'),
+      platform
+    );
+  }
+
+  if (moduleName === '@rnmapbox/maps' || moduleName.startsWith('@rnmapbox/maps/')) {
+    if (moduleName === '@rnmapbox/maps') {
+      return context.resolveRequest(
+        context,
+        path.resolve(projectRoot, '__metro_mocks__', '@rnmapbox', 'maps.js'),
+        platform
+      );
+    }
+    return { type: 'empty' };
+  }
+
   // Redirect core dependencies to root to prevent duplicates in monorepo
   const rootRedirects = [
     'react',
@@ -28,10 +50,14 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
       platform
     );
   }
-  
+
   return context.resolveRequest(context, moduleName, platform);
 };
 
+config.resolver.blockList = [
+  /react-native-css-interop\/\.cache\/.*/,
+  /mapbox-gl\/dist\/.*/,
+];
 config.watchFolders = [workspaceRoot];
 config.resolver.nodeModulesPaths = [
   path.resolve(projectRoot, 'node_modules'),
@@ -39,4 +65,3 @@ config.resolver.nodeModulesPaths = [
 ];
 
 module.exports = withNativeWind(config, { input: './global.css' });
-

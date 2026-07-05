@@ -1,4 +1,4 @@
-import React, { useEffect, type ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { View, ActivityIndicator, Text } from 'react-native';
 import { useRouter, useSegments } from 'expo-router';
 import { useAuth } from '../lib/auth-context';
@@ -38,9 +38,9 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
 
   if (isLoading) {
     return (
-      <View style={{ flex: 1, backgroundColor: '#f8f8f8', alignItems: 'center', justifyContent: 'center' }}>
-        <ActivityIndicator size="large" color="#863d3c" />
-        <Text style={{ color: '#9ca3af', fontSize: 14, marginTop: 12, fontWeight: '500' }}>Loading session...</Text>
+      <View className="flex-1 bg-surface-container-lowest items-center justify-center">
+        <ActivityIndicator size="large" color="#692727" />
+        <Text className="text-on-surface-variant font-label-md mt-3">Loading session...</Text>
       </View>
     );
   }

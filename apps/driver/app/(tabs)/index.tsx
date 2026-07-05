@@ -347,6 +347,58 @@ export default function DriverDashboard() {
           />
         }
       >
+        {/* ── Onboarding Prompt ── */}
+        {driver && (
+          <>
+            {!driver.isKycVerified && (
+              <View style={{ marginHorizontal: 16, marginBottom: 12 }}>
+                <View style={{ backgroundColor: 'rgba(127, 29, 29, 0.3)', borderWidth: 1, borderColor: '#ef4444', borderRadius: 16, padding: 16, flexDirection: 'row', alignItems: 'center' }}>
+                  <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(239, 68, 68, 0.2)', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+                    <Text style={{ fontSize: 16 }}>📄</Text>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ color: '#ffffff', fontWeight: '700', fontSize: 14, marginBottom: 2 }}>
+                      KYC Not Completed
+                    </Text>
+                    <Text style={{ color: '#fca5a5', fontSize: 11, lineHeight: 16 }}>
+                      Submit your identity documents to go online and accept rides.
+                    </Text>
+                  </View>
+                  <TouchableOpacity
+                    onPress={() => router.push('/(tabs)/kyc')}
+                    style={{ backgroundColor: '#ef4444', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 10 }}
+                  >
+                    <Text style={{ color: '#ffffff', fontWeight: '800', fontSize: 11 }}>Submit</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+            {(!driver.vehicle || driver.vehicle.licensePlate.startsWith('TEMP-')) && driver.isKycVerified && (
+              <View style={{ marginHorizontal: 16, marginBottom: 12 }}>
+                <View style={{ backgroundColor: 'rgba(180, 83, 9, 0.2)', borderWidth: 1, borderColor: '#f59e0b', borderRadius: 16, padding: 16, flexDirection: 'row', alignItems: 'center' }}>
+                  <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(245, 158, 11, 0.2)', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+                    <Text style={{ fontSize: 16 }}>🚖</Text>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ color: '#ffffff', fontWeight: '700', fontSize: 14, marginBottom: 2 }}>
+                      Vehicle Not Registered
+                    </Text>
+                    <Text style={{ color: '#fde68a', fontSize: 11, lineHeight: 16 }}>
+                      Register your vehicle details before going online.
+                    </Text>
+                  </View>
+                  <TouchableOpacity
+                    onPress={() => router.push('/(tabs)/vehicle')}
+                    style={{ backgroundColor: '#f59e0b', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 10 }}
+                  >
+                    <Text style={{ color: '#111111', fontWeight: '800', fontSize: 11 }}>Register</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+          </>
+        )}
+
         {/* ── Online Toggle Card ── */}
         <View style={{ marginHorizontal: 16, marginBottom: 16 }}>
           <View

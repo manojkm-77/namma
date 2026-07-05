@@ -1,27 +1,50 @@
-import { createClient } from '@supabase/supabase-js';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
-const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key';
+function getAsyncStorage() {
+  try {
+    const mod = require('@react-native-async-storage/async-storage');
+    return mod.default || mod;
+  } catch {
+    return undefined;
+  }
+}
 
-// Initialize Supabase Client with AsyncStorage for mobile session persistence
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL || '';
+const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
+
+export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
-    storage: AsyncStorage,
+    storage: getAsyncStorage(),
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: false,
   },
 });
 
-// Database Enums & Types
+export function createTypedClient(): SupabaseClient {
+  return createClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      storage: getAsyncStorage(),
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: false,
+    },
+  });
+}
+
 export type UserRole = 'rider' | 'driver' | 'admin';
 export type DutyStatus = 'offline' | 'online' | 'busy';
 export type VehicleType = 'auto' | 'mini' | 'sedan' | 'suv';
-export type RideStatus = 'requested' | 'accepted' | 'arrived' | 'picked_up' | 'completed' | 'cancelled';
+export type RideStatus =
+  | 'requested'
+  | 'accepted'
+  | 'arrived'
+  | 'picked_up'
+  | 'completed'
+  | 'cancelled';
 
 export interface UserProfile {
-  id: string; // References auth.users.id
+  id: string;
   phone_number: string;
   full_name: string;
   role: UserRole;
@@ -31,7 +54,7 @@ export interface UserProfile {
 }
 
 export interface DriverProfile {
-  id: string; // References public.users.id
+  id: string;
   is_active: boolean;
   duty_status: DutyStatus;
   rating: number;
@@ -43,8 +66,8 @@ export interface DriverProfile {
 
 export interface Ride {
   id: string;
-  rider_id: string; // References public.users.id
-  driver_id?: string | null; // References public.drivers.id
+  rider_id: string;
+  driver_id?: string | null;
   status: RideStatus;
   pickup_address: string;
   pickup_location_lat: number;
@@ -65,7 +88,7 @@ export interface Ride {
 
 export interface LiveLocation {
   id: string;
-  entity_id: string; // References users.id or drivers.id or ride_id
+  entity_id: string;
   latitude: number;
   longitude: number;
   heading?: number | null;

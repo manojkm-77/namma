@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { View, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../src/lib/auth-context';
@@ -18,8 +18,8 @@ export default function Index() {
   }, [isAuthenticated, isLoading, router]);
 
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#ffffff' }}>
-      <ActivityIndicator size="large" color="#863d3c" />
+    <View className="flex-1 justify-center items-center bg-surface-container-lowest">
+      <ActivityIndicator size="large" color="#692727" />
     </View>
   );
 }

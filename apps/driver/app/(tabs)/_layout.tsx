@@ -42,10 +42,10 @@ export default function TabLayout() {
           }}
         />
         <Tabs.Screen
-          name="wallet"
+          name="vehicle"
           options={{
             tabBarIcon: ({ focused }) => (
-              <TabIcon emoji="💰" label="Wallet" focused={focused} />
+              <TabIcon emoji="🚖" label="Vehicle" focused={focused} />
             )
           }}
         />
@@ -58,10 +58,26 @@ export default function TabLayout() {
           }}
         />
         <Tabs.Screen
+          name="wallet"
+          options={{
+            tabBarIcon: ({ focused }) => (
+              <TabIcon emoji="💰" label="Wallet" focused={focused} />
+            )
+          }}
+        />
+        <Tabs.Screen
           name="profile"
           options={{
             tabBarIcon: ({ focused }) => (
               <TabIcon emoji="👤" label="Profile" focused={focused} />
+            )
+          }}
+        />
+        <Tabs.Screen
+          name="telematics"
+          options={{
+            tabBarIcon: ({ focused }) => (
+              <TabIcon emoji="⚡" label="Telemetry" focused={focused} />
             )
           }}
         />
